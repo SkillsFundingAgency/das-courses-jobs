@@ -68,6 +68,9 @@
         "utcValue": {
             "type": "string",
             "defaultValue": "[utcNow()]"
+        },
+        "exampleTimerSchedule": {
+            "type": "string"
         }
     },
     "variables": {
@@ -247,6 +250,10 @@
                                 {
                                     "name": "WEBSITE_RUN_FROM_PACKAGE",
                                     "value": "1"
+                                },
+                                {
+                                  "name": "ExampleTimerSchedule",
+                                  "value": "[parameters('exampleTimerSchedule')]"
                                 }
                             ]
                         }
