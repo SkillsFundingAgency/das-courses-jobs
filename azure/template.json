@@ -68,6 +68,9 @@
         "utcValue": {
             "type": "string",
             "defaultValue": "[utcNow()]"
+        },
+        "exampleTimerSchedule": {
+            "type": "string"
         }
     },
     "variables": {
@@ -76,7 +79,7 @@
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "functionAppName": "[concat(variables('resourceNamePrefix'), '-fa')]",
         "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-asp')]",
-        "configNames": "__SolutionBaseName__" //PLACEHOLDER
+        "configNames": "SFA.DAS.Courses.Jobs"
     },
     "resources": [
         {
@@ -247,6 +250,10 @@
                                 {
                                     "name": "WEBSITE_RUN_FROM_PACKAGE",
                                     "value": "1"
+                                },
+                                {
+                                  "name": "ExampleTimerSchedule",
+                                  "value": "[parameters('exampleTimerSchedule')]"
                                 }
                             ]
                         }

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SFA.DAS.Courses.Jobs": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 8081"
+    }
+  }
+}
