@@ -35,7 +35,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Helpers
             return Task.FromResult(new OrchestrationMetadata(Guid.NewGuid().ToString(), instanceId));
         }
 
-        public override Task TerminateInstanceAsync(string instanceId, object output = null, CancellationToken cancellation = new())
+        public override Task TerminateInstanceAsync(string instanceId, object output, CancellationToken cancellation = new())
         {
             return Task.CompletedTask;
         }
@@ -61,12 +61,12 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Helpers
             return new FakeOrchestrationMetadataAsyncPageable();
         }
 
-        public override Task<PurgeResult> PurgeInstanceAsync(string instanceId, CancellationToken cancellation = new())
+        public override Task<PurgeResult> PurgeInstanceAsync(string instanceId, CancellationToken cancellation)
         {
             return Task.FromResult(new PurgeResult(1));
         }
 
-        public override Task<PurgeResult> PurgeAllInstancesAsync(PurgeInstancesFilter filter, CancellationToken cancellation = new())
+        public override Task<PurgeResult> PurgeAllInstancesAsync(PurgeInstancesFilter filter, CancellationToken cancellation)
         {
             return Task.FromResult(new PurgeResult(Random.Shared.Next()));
         }

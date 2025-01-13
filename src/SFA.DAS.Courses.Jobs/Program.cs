@@ -20,6 +20,7 @@ namespace SFA.DAS.Courses.Jobs
                     services.AddApplicationInsightsTelemetryWorkerService();
                     services.ConfigureFunctionsApplicationInsights();
                     services.AddApplicationOptions();
+                    services.AddServiceRegistrations();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {

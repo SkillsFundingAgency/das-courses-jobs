@@ -3,31 +3,31 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 
-namespace SFA.DAS.Courses.Jobs.Functions.Example
+namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
 {
-    public class ExampleFunction
+    public class UpdateStandardsFunction
     {
-        private readonly ILogger<ExampleFunction> _logger;
+        private readonly ILogger<UpdateStandardsFunction> _logger;
         
-        public ExampleFunction(ILogger<ExampleFunction> logger)
+        public UpdateStandardsFunction(ILogger<UpdateStandardsFunction> logger)
         {
             _logger = logger;
         }
 
-        [Function(nameof(ExampleTimer))]
-        public async Task ExampleTimer([TimerTrigger("%ExampleTimerSchedule%")] TimerInfo myTimer,
+        [Function(nameof(UpdateStandardsTimer))]
+        public async Task UpdateStandardsTimer([TimerTrigger("%UpdateStandardsTimerSchedule%")] TimerInfo myTimer,
             [DurableClient] DurableTaskClient client)
         {
-            await Run(nameof(ExampleTimer), client);
+            await Run(nameof(UpdateStandardsTimer), client);
         }
 
 #if DEBUG
-        [Function(nameof(ExampleHttp))]
-        public async Task ExampleHttp(
+        [Function(nameof(UpdateStandardsHttp))]
+        public async Task UpdateStandardsHttp(
             [HttpTrigger(AuthorizationLevel.Function, "POST")] HttpRequest request,
             [DurableClient] DurableTaskClient client)
         {
-            await Run(nameof(ExampleHttp), client);
+            await Run(nameof(UpdateStandardsHttp), client);
         }
 #endif
 
@@ -37,7 +37,7 @@ namespace SFA.DAS.Courses.Jobs.Functions.Example
             {
                 _logger.LogInformation("{FunctionName} has been triggered", functionName);
 
-                string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(ExampleOrchestration), CancellationToken.None);
+                string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None);
 
                 _logger.LogInformation("{FunctionName} has started orchestration with {InstanceId}", functionName, instanceId);
             }
