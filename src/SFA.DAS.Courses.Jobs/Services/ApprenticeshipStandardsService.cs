@@ -1,18 +1,25 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
+using SFA.DAS.Courses.Infrastructure.Api;
 
 namespace SFA.DAS.Courses.Jobs.Services
 {
     public class ApprenticeshipStandardsService : IApprenticeshipStandardsService
     {
         private readonly HttpClient _client;
-        public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory)
+        private readonly ICoursesApi _coursesApi;
+
+        public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory, ICoursesApi coursesApi)
         {
             _client = httpClientFactory.CreateClient("ifate");
+            _coursesApi = coursesApi;
         }
 
         public async Task<Dictionary<string, string>> GetAllStandards()
         {
+            var standardsImportUrl = await _coursesApi.GetStandardsImportUrl();
+            _client.BaseAddress = new Uri(standardsImportUrl);
+
             var response = await _client.GetAsync("");
             var result = await response.Content.ReadAsStringAsync();
             var rootElement = JsonDocument.Parse(result).RootElement;

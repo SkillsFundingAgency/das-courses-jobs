@@ -8,6 +8,7 @@ using FluentAssertions;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
+using SFA.DAS.Courses.Infrastructure.Api;
 using SFA.DAS.Courses.Jobs.Services;
 
 namespace SFA.DAS.Courses.Jobs.UnitTests.Services
@@ -16,6 +17,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
     public class ApprenticeshipStandardsServiceTests
     {
         private Mock<IHttpClientFactory> _httpClientFactoryMock;
+        private Mock<ICoursesApi> _coursesApiMock;
         private Mock<HttpMessageHandler> _httpMessageHandlerMock;
         private HttpClient _httpClient;
         private ApprenticeshipStandardsService _sut;
@@ -25,17 +27,19 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
         {
             _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
 
-            _httpClient = new HttpClient(_httpMessageHandlerMock.Object)
-            {
-                BaseAddress = new Uri("https://example.com/")
-            };
+            _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
 
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _httpClientFactoryMock
                 .Setup(x => x.CreateClient("ifate"))
                 .Returns(_httpClient);
 
-            _sut = new ApprenticeshipStandardsService(_httpClientFactoryMock.Object);
+            _coursesApiMock = new Mock<ICoursesApi>();
+            _coursesApiMock
+                .Setup(x => x.GetStandardsImportUrl())
+                .ReturnsAsync("http://standards.com");
+
+            _sut = new ApprenticeshipStandardsService(_httpClientFactoryMock.Object, _coursesApiMock.Object);
         }
 
         [Test]
@@ -101,6 +105,31 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
 
             // Assert
             await act.Should().ThrowAsync<JsonException>();
+        }
+
+        [Test]
+        public async Task GetAllStandards_Should_Get_StandardsUrl_From_CoursesApi()
+        {
+            var mockResponseData = "[]";
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockResponseData)
+                });
+
+            // Act
+            await _sut.GetAllStandards();
+
+            // Assert
+            _coursesApiMock.Verify(x => x.GetStandardsImportUrl(), Times.Once);
+            _httpClient.BaseAddress.Should().Be("http://standards.com");
         }
 
         [Test]
