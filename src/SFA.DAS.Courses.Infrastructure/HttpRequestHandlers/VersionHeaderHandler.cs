@@ -1,5 +1,8 @@
-﻿namespace SFA.DAS.Courses.Infrastructure.HttpRequestHandlers
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SFA.DAS.Courses.Infrastructure.HttpRequestHandlers
 {
+    [ExcludeFromCodeCoverage]
     public class VersionHeaderHandler : DelegatingHandler
     {
         private readonly string _version;

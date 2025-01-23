@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ namespace SFA.DAS.Courses.Jobs
 {
     static class Program
     {
+        [ExcludeFromCodeCoverage]
         static async Task Main(string[] args)
         {
             var host = new HostBuilder()

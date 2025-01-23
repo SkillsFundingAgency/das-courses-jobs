@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using RestEase.HttpClientFactory;
 using SFA.DAS.Courses.Infrastructure.Api;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -10,6 +11,7 @@ using SFA.DAS.Http.TokenGenerators;
 
 namespace SFA.DAS.Courses.Jobs.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class AddServiceRegistrationExtensions
     {
         public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, ApplicationConfiguration configuration)

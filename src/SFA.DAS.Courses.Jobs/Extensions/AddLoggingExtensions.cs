@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace SFA.DAS.Courses.Jobs.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class AddLoggingExtensions
     {
         public static void AddLogging(this ILoggingBuilder logBuilder)
