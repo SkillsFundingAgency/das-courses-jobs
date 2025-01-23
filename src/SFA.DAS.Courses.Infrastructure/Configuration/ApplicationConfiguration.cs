@@ -1,5 +1,8 @@
-﻿namespace SFA.DAS.Courses.Infrastructure.Configuration
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SFA.DAS.Courses.Infrastructure.Configuration
 {
+    [ExcludeFromCodeCoverage]
     public class ApplicationConfiguration
     {
         public CoursesApiClientConfiguration CoursesApiClientConfiguration { get; set; }

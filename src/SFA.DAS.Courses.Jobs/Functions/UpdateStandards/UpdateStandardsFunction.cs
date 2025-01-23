@@ -43,7 +43,7 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "{FunctionName} has has failed", functionName);
+                _logger.LogError(ex, "{FunctionName} has failed", functionName);
             }
         }
     }
