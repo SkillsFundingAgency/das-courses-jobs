@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -45,7 +45,7 @@ namespace SFA.DAS.Courses.Jobs.Services
                 request.Message = $"Adding {fileName}";
             }
 
-            var response = await _gitHubContentsClient.PutAsJsonAsync(fileName, request);
+            var response = await _gitHubContentsClient.PutAsync(fileName, new StringContent(JsonSerializer.Serialize(request)));
 
             if (!response.IsSuccessStatusCode)
             {
@@ -93,16 +93,25 @@ namespace SFA.DAS.Courses.Jobs.Services
 
     public class CreateFileRequest
     {
+        [JsonPropertyName("content")]
         public string? Content { get; set; }
+        
+        [JsonPropertyName("message")]
         public string? Message { get; set; }
+        
+        [JsonPropertyName("sha")]
         public string? Sha { get; set; }
+        
+        [JsonPropertyName("committer")]
         public Committer? Committer { get; set; }
     }
 
     public class Committer
     {
+        [JsonPropertyName("name")]
         public string? Name { get; set; }
 
+        [JsonPropertyName("email")]
         public string? Email {get; set;}
     }
 }
