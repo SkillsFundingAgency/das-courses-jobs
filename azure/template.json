@@ -69,7 +69,7 @@
             "type": "string",
             "defaultValue": "[utcNow()]"
         },
-        "exampleTimerSchedule": {
+        "updateStandardsTimerSchedule": {
             "type": "string"
         }
     },
@@ -252,8 +252,8 @@
                                     "value": "1"
                                 },
                                 {
-                                  "name": "ExampleTimerSchedule",
-                                  "value": "[parameters('exampleTimerSchedule')]"
+                                  "name": "UpdateStandardsTimerSchedule",
+                                  "value": "[parameters('updateStandardsTimerSchedule')]"
                                 }
                             ]
                         }
