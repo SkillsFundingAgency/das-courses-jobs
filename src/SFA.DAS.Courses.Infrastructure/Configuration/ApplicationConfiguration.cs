@@ -6,6 +6,7 @@ namespace SFA.DAS.Courses.Infrastructure.Configuration
     public class ApplicationConfiguration
     {
         public CoursesApiClientConfiguration CoursesApiClientConfiguration { get; set; }
+        public string InstituteOfApprenticeshipsStandardsUrl { get; set; }
         public string GitHubRepositoryName { get; set; }
         public string GitHubUserName { get; set; }
         public string GitHubEmail { get; set; }
