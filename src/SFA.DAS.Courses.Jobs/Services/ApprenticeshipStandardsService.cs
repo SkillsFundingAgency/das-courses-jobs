@@ -1,24 +1,25 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Api;
+using SFA.DAS.Courses.Infrastructure.Configuration;
 
 namespace SFA.DAS.Courses.Jobs.Services
 {
     public class ApprenticeshipStandardsService : IApprenticeshipStandardsService
     {
         private readonly HttpClient _client;
-        private readonly ICoursesApi _coursesApi;
+        private readonly ApplicationConfiguration _applicationConfiguration;
 
-        public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory, ICoursesApi coursesApi)
+        public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory, IOptions<ApplicationConfiguration> options)
         {
             _client = httpClientFactory.CreateClient("ifate");
-            _coursesApi = coursesApi;
+            _applicationConfiguration = options.Value;
         }
 
         public async Task<Dictionary<string, string>> GetAllStandards()
         {
-            var standardsImportUrl = await _coursesApi.GetStandardsImportUrl();
-            _client.BaseAddress = new Uri(standardsImportUrl);
+            _client.BaseAddress = new Uri(_applicationConfiguration.InstituteOfApprenticeshipsStandardsUrl);
 
             var response = await _client.GetAsync("");
             var result = await response.Content.ReadAsStringAsync();

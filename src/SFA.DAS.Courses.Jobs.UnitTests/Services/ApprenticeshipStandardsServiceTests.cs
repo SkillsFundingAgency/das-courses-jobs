@@ -5,10 +5,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
 using SFA.DAS.Courses.Infrastructure.Api;
+using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Services;
 
 namespace SFA.DAS.Courses.Jobs.UnitTests.Services
@@ -17,9 +19,10 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
     public class ApprenticeshipStandardsServiceTests
     {
         private Mock<IHttpClientFactory> _httpClientFactoryMock;
-        private Mock<ICoursesApi> _coursesApiMock;
+        private Mock<IOptions<ApplicationConfiguration>> _optionsMock;
         private Mock<HttpMessageHandler> _httpMessageHandlerMock;
         private HttpClient _httpClient;
+        private ApplicationConfiguration _config;
         private ApprenticeshipStandardsService _sut;
 
         [SetUp]
@@ -34,12 +37,14 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 .Setup(x => x.CreateClient("ifate"))
                 .Returns(_httpClient);
 
-            _coursesApiMock = new Mock<ICoursesApi>();
-            _coursesApiMock
-                .Setup(x => x.GetStandardsImportUrl())
-                .ReturnsAsync("http://standards.com");
+            _optionsMock = new Mock<IOptions<ApplicationConfiguration>>();
+            _config = new ApplicationConfiguration
+            {
+                InstituteOfApprenticeshipsStandardsUrl = "http://standards.org"
+            };
+            _optionsMock.Setup(o => o.Value).Returns(_config);
 
-            _sut = new ApprenticeshipStandardsService(_httpClientFactoryMock.Object, _coursesApiMock.Object);
+            _sut = new ApprenticeshipStandardsService(_httpClientFactoryMock.Object, _optionsMock.Object);
         }
 
         [Test]
@@ -128,8 +133,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             await _sut.GetAllStandards();
 
             // Assert
-            _coursesApiMock.Verify(x => x.GetStandardsImportUrl(), Times.Once);
-            _httpClient.BaseAddress.Should().Be("http://standards.com");
+            _httpClient.BaseAddress.Should().Be("http://standards.org");
         }
 
         [Test]
