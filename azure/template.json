@@ -348,7 +348,7 @@
                         "value": "[reference(concat(variables('functionAppName'), '-', parameters('utcValue'))).outputs.managedServiceIdentityId.value]"
                     },
                     "assignmentType": {
-                        "value": "Key Vault Crypto Officer"
+                        "value": "Key Vault Secrets User"
                     },
                     "resourceName": {
                         "value": "[variables('keyVaultName')]"
