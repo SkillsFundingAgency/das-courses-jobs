@@ -45,8 +45,11 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
 
             _config = new ApplicationConfiguration
             {
-                GitHubUserName = "TestUser",
-                GitHubEmail = "testuser@example.com"
+                GitHubConfiguration = new GitHubConfiguration
+                {
+                    UserName = "TestUser",
+                    Email = "testuser@example.com"
+                }
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
 
@@ -106,7 +109,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             var fileNamePrefix = "test";
             var logProgress = "Progress";
 
-            HttpRequestMessage? capturedRequest = null;
+            HttpRequestMessage capturedRequest = null;
 
             _httpMessageHandlerMock
                 .Protected()
@@ -146,8 +149,8 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             deserializedRequest.Content.Should().Be(Convert.ToBase64String(UTF8Encoding.Default.GetBytes(updatedContent)));
             deserializedRequest.Message.Should().Be($"Updating {fileNamePrefix}.json");
             deserializedRequest.Committer.Should().NotBeNull();
-            deserializedRequest.Committer.Name.Should().Be(_config.GitHubUserName);
-            deserializedRequest.Committer.Email.Should().Be(_config.GitHubEmail);
+            deserializedRequest.Committer.Name.Should().Be(_config.GitHubConfiguration.UserName);
+            deserializedRequest.Committer.Email.Should().Be(_config.GitHubConfiguration.Email);
         }
 
         [Test]
@@ -187,7 +190,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             var fileNamePrefix = "test";
             var logProgress = "Progress";
 
-            HttpRequestMessage? capturedRequest = null;
+            HttpRequestMessage capturedRequest = null;
 
             _httpMessageHandlerMock
                 .Protected()
@@ -227,8 +230,8 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             deserializedRequest.Content.Should().Be(Convert.ToBase64String(UTF8Encoding.Default.GetBytes(updatedContent)));
             deserializedRequest.Message.Should().Be($"Adding {fileNamePrefix}.json");
             deserializedRequest.Committer.Should().NotBeNull();
-            deserializedRequest.Committer.Name.Should().Be(_config.GitHubUserName);
-            deserializedRequest.Committer.Email.Should().Be(_config.GitHubEmail);
+            deserializedRequest.Committer.Name.Should().Be(_config.GitHubConfiguration.UserName);
+            deserializedRequest.Committer.Email.Should().Be(_config.GitHubConfiguration.Email);
         }
     
         [Test]

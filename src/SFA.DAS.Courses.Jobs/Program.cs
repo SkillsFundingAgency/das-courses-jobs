@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Extensions;
+using SFA.DAS.Courses.Jobs.Services;
 
 namespace SFA.DAS.Courses.Jobs
 {
@@ -19,7 +20,7 @@ namespace SFA.DAS.Courses.Jobs
                 {
                     config.AddConfiguration();
                 })
-                .ConfigureServices((context, services) =>
+                .ConfigureServices(async (context, services) =>
                 {
                     services.AddApplicationInsightsTelemetryWorkerService();
                     services.ConfigureFunctionsApplicationInsights();
@@ -30,12 +31,16 @@ namespace SFA.DAS.Courses.Jobs
                         .Get<ApplicationConfiguration>()
                     ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
+                    var gitHubBearerTokenService = new GitHubBearerTokenService(applicationConfig);
+                    var gitHubBearerToken = await gitHubBearerTokenService.GetSecret();
+
+                    services.AddServiceRegistrations(applicationConfig, gitHubBearerToken);
+
                     var coursesApiConfig = context.Configuration
                         .GetSection(nameof(CoursesApiClientConfiguration))
                         .Get<CoursesApiClientConfiguration>()
                     ?? throw new InvalidOperationException($"{nameof(CoursesApiClientConfiguration)} section is missing or invalid.");
 
-                    services.AddServiceRegistrations(applicationConfig);
                     services.AddCoursesApi(coursesApiConfig);
 
                 })

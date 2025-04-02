@@ -26,7 +26,7 @@ namespace SFA.DAS.Courses.Jobs.Services
             var request = new CreateFileRequest
             {
                 Content = GetEncodedContent(updatedContent),
-                Committer = new Committer { Name = _applicationConfiguration.GitHubUserName, Email = _applicationConfiguration.GitHubEmail }
+                Committer = new Committer { Name = _applicationConfiguration.GitHubConfiguration.UserName, Email = _applicationConfiguration.GitHubConfiguration.Email }
             };
 
             if (existingFile.Sha != null)
