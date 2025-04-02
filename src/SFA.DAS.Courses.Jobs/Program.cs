@@ -29,7 +29,7 @@ namespace SFA.DAS.Courses.Jobs
 
                     var applicationConfig = context.Configuration
                         .Get<ApplicationConfiguration>()
-                    ?? throw new InvalidOperationException("Configuration is missing or invalid.");
+                        ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
                     var gitHubBearerTokenService = new GitHubBearerTokenService(applicationConfig);
                     var gitHubBearerToken = await gitHubBearerTokenService.GetSecret();

@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using SFA.DAS.Courses.Infrastructure.Configuration;
+using SFA.DAS.Courses.Jobs.Exceptions;
 
 namespace SFA.DAS.Courses.Jobs.Services
 {
@@ -17,9 +18,16 @@ namespace SFA.DAS.Courses.Jobs.Services
 
         public async Task<string> GetSecret()
         {
-            var client = new SecretClient(new Uri($"https://{_keyVaultIdentifier}.vault.azure.net/"), new DefaultAzureCredential());
-            var secret = await client.GetSecretAsync(_keyVaultSecretName);
-            return secret.Value.Value;
+            try
+            {
+                var client = new SecretClient(new Uri($"https://{_keyVaultIdentifier}.vault.azure.net/"), new DefaultAzureCredential());
+                var secret = await client.GetSecretAsync(_keyVaultSecretName);
+                return secret.Value.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new KeyvaultAccessException($"Unable to get github bearer token from {_keyVaultIdentifier} using {_keyVaultSecretName}", ex);
+            }
         }
     }
 }
