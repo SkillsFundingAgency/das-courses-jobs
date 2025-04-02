@@ -22,27 +22,34 @@ namespace SFA.DAS.Courses.Jobs
                 })
                 .ConfigureServices(async (context, services) =>
                 {
-                    services.AddApplicationInsightsTelemetryWorkerService();
-                    services.ConfigureFunctionsApplicationInsights();
-                    services.AddApplicationOptions();
-                    services.ConfigureFromOptions(f => f.CoursesApiClientConfiguration);
+                    try
+                    {
+                        services.AddApplicationInsightsTelemetryWorkerService();
+                        services.ConfigureFunctionsApplicationInsights();
+                        services.AddApplicationOptions();
+                        services.ConfigureFromOptions(f => f.CoursesApiClientConfiguration);
 
-                    var applicationConfig = context.Configuration
-                        .Get<ApplicationConfiguration>()
-                        ?? throw new InvalidOperationException("Configuration is missing or invalid.");
+                        var applicationConfig = context.Configuration
+                            .Get<ApplicationConfiguration>()
+                            ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
-                    var gitHubBearerTokenService = new GitHubBearerTokenService(applicationConfig);
-                    var gitHubBearerToken = await gitHubBearerTokenService.GetSecret();
+                        var gitHubBearerTokenService = new GitHubBearerTokenService(applicationConfig);
+                        var gitHubBearerToken = await gitHubBearerTokenService.GetSecret();
 
-                    services.AddServiceRegistrations(applicationConfig, gitHubBearerToken);
+                        services.AddServiceRegistrations(applicationConfig, gitHubBearerToken);
 
-                    var coursesApiConfig = context.Configuration
-                        .GetSection(nameof(CoursesApiClientConfiguration))
-                        .Get<CoursesApiClientConfiguration>()
-                    ?? throw new InvalidOperationException($"{nameof(CoursesApiClientConfiguration)} section is missing or invalid.");
+                        var coursesApiConfig = context.Configuration
+                            .GetSection(nameof(CoursesApiClientConfiguration))
+                            .Get<CoursesApiClientConfiguration>()
+                        ?? throw new InvalidOperationException($"{nameof(CoursesApiClientConfiguration)} section is missing or invalid.");
 
-                    services.AddCoursesApi(coursesApiConfig);
-
+                        services.AddCoursesApi(coursesApiConfig);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Exception in ConfigureService: {ex}");
+                        throw;
+                    }
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
