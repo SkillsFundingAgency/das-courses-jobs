@@ -53,7 +53,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
 
-            _sut = new GitHubRepositoryService(_httpClientFactoryMock.Object, _optionsMock.Object);
+            _sut = new GitHubRepositoryService(_httpClientFactoryMock.Object, new GitHubBearerTokenHolder(), _optionsMock.Object);
         }
 
         [Test]

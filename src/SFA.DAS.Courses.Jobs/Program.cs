@@ -33,17 +33,16 @@ namespace SFA.DAS.Courses.Jobs
                             .Get<ApplicationConfiguration>()
                             ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
-                        var gitHubBearerTokenService = new GitHubBearerTokenService(applicationConfig);
-                        var gitHubBearerToken = await gitHubBearerTokenService.GetSecret();
-
-                        services.AddServiceRegistrations(applicationConfig, gitHubBearerToken);
-
+                        services.AddServiceRegistrations(applicationConfig);
+                        
                         var coursesApiConfig = context.Configuration
                             .GetSection(nameof(CoursesApiClientConfiguration))
                             .Get<CoursesApiClientConfiguration>()
                         ?? throw new InvalidOperationException($"{nameof(CoursesApiClientConfiguration)} section is missing or invalid.");
 
                         services.AddCoursesApi(coursesApiConfig);
+
+                        services.AddHostedService<GitHubBearerTokenService>();
                     }
                     catch (Exception ex)
                     {

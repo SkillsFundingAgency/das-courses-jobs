@@ -14,16 +14,16 @@ namespace SFA.DAS.Courses.Jobs.Extensions
     [ExcludeFromCodeCoverage]
     public static class AddServiceRegistrationExtensions
     {
-        public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, ApplicationConfiguration configuration, string gitHubBearerToken)
+        public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, ApplicationConfiguration configuration)
         {
             services.AddHttpClient("github-contents", client =>
             {
                 client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, configuration.GitHubConfiguration.UserName, configuration.GitHubConfiguration.RepositoryName));
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {gitHubBearerToken}");
             });
             
             services.AddHttpClient("ifate");
 
+            services.AddSingleton<GitHubBearerTokenHolder>();
             services.AddTransient<IApprenticeshipStandardsService, ApprenticeshipStandardsService>();
             services.AddTransient<IGitHubRepositoryService, GitHubRepositoryService>();
 
