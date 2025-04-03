@@ -19,6 +19,7 @@ namespace SFA.DAS.Courses.Jobs.Extensions
             services.AddHttpClient("github-contents", client =>
             {
                 client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, configuration.GitHubConfiguration.UserName, configuration.GitHubConfiguration.RepositoryName));
+                client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({configuration.GitHubConfiguration.Email})");
             });
             
             services.AddHttpClient("ifate");
