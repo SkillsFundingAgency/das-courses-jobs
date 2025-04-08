@@ -5,7 +5,11 @@
         public GitHubFileException(string message)
             : base(message)
         {
+        }
 
+        public GitHubFileException(string message, Exception innerException)
+            : base(message, innerException)
+        {
         }
     }
 }

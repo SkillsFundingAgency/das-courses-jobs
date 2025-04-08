@@ -18,13 +18,13 @@ namespace SFA.DAS.Courses.Jobs.Extensions
         {
             services.AddHttpClient("github-contents", client =>
             {
-                client.BaseAddress = new Uri(string.Format(ApplicationConfiguration.GitHubUrl, configuration.GitHubUserName, configuration.GitHubRepositoryName));
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {configuration.GitHubAccessToken}");
-                client.DefaultRequestHeaders.Add("User-Agent", "StandardsVersioning");
+                client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, configuration.GitHubConfiguration.UserName, configuration.GitHubConfiguration.RepositoryName));
+                client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({configuration.GitHubConfiguration.Email})");
             });
             
             services.AddHttpClient("ifate");
 
+            services.AddSingleton<GitHubBearerTokenHolder>();
             services.AddTransient<IApprenticeshipStandardsService, ApprenticeshipStandardsService>();
             services.AddTransient<IGitHubRepositoryService, GitHubRepositoryService>();
 
