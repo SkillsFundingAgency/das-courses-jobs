@@ -2,15 +2,18 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
+using SFA.DAS.Courses.Infrastructure.Configuration;
 
 namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
 {
     public class UpdateStandardsFunction
     {
+        private readonly UpdateStandardsConfiguration _configuration;
         private readonly ILogger<UpdateStandardsFunction> _logger;
-        
-        public UpdateStandardsFunction(ILogger<UpdateStandardsFunction> logger)
+
+        public UpdateStandardsFunction(ApplicationConfiguration configuration, ILogger<UpdateStandardsFunction> logger)
         {
+            _configuration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration;
             _logger = logger;
         }
 
@@ -18,7 +21,8 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
         public async Task UpdateStandardsTimer([TimerTrigger("%UpdateStandardsTimerSchedule%")] TimerInfo myTimer,
             [DurableClient] DurableTaskClient client)
         {
-            await Run(nameof(UpdateStandardsTimer), client);
+            if(_configuration.Enabled)
+                await Run(nameof(UpdateStandardsTimer), client);
         }
 
 #if DEBUG
@@ -27,7 +31,8 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
             [HttpTrigger(AuthorizationLevel.Function, "POST")] HttpRequest request,
             [DurableClient] DurableTaskClient client)
         {
-            await Run(nameof(UpdateStandardsHttp), client);
+            if (_configuration.Enabled)
+                await Run(nameof(UpdateStandardsHttp), client);
         }
 #endif
 

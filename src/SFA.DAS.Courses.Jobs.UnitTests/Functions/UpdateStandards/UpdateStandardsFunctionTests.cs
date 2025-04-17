@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.UnitTests.Extensions;
 using SFA.DAS.Courses.Jobs.UnitTests.Helpers;
 
@@ -12,15 +13,32 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards.UnitTests
 {
     public class UpdateStandardsFunctionTests
     {
+        private ApplicationConfiguration _configuration;
+
+        [SetUp]
+        public void Setup()
+        {
+            _configuration = new ApplicationConfiguration
+            {
+                FunctionsConfiguration = new FunctionsConfiguration
+                {
+                    UpdateStandardsConfiguration = new UpdateStandardsConfiguration
+                    {
+                        Enabled = true
+                    }
+                }
+            };
+        }
+
         [Test]
-        public async Task RunTimerTrigger_Should_Start_New_Orchestration_And_Log_Messages()
+        public async Task RunTimerTrigger_Should_Start_New_Orchestration_WhenEnabled()
         {
             // Arrange
             var mockDurableTaskClient = new Mock<FakeDurableTaskClient>();
             var mockLogger = new Mock<ILogger<UpdateStandardsFunction>>();
             var timerInfo = new TimerInfo();
 
-            var sut = new UpdateStandardsFunction(mockLogger.Object);
+            var sut = new UpdateStandardsFunction(_configuration, mockLogger.Object);
 
             mockDurableTaskClient
                 .Setup(x => x.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None))
@@ -36,6 +54,31 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards.UnitTests
         }
 
         [Test]
+        public async Task RunTimerTrigger_Should_Not_Start_New_Orchestration_WhenNotEnabled()
+        {
+            // Arrange
+            var mockDurableTaskClient = new Mock<FakeDurableTaskClient>();
+            var mockLogger = new Mock<ILogger<UpdateStandardsFunction>>();
+            var timerInfo = new TimerInfo();
+            
+            _configuration.FunctionsConfiguration.UpdateStandardsConfiguration.Enabled = false;
+
+            var sut = new UpdateStandardsFunction(_configuration, mockLogger.Object);
+
+            mockDurableTaskClient
+                .Setup(x => x.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None))
+                .ReturnsAsync("test-instance-id");
+
+            // Act
+            await sut.UpdateStandardsTimer(timerInfo, mockDurableTaskClient.Object);
+
+            // Assert
+            mockDurableTaskClient.Verify(x =>
+                x.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None),
+                Times.Never);
+        }
+
+        [Test]
         public async Task RunTimerTrigger_Should_Log_Error_When_Start_New_Orchestration_Fails()
         {
             // Arrange
@@ -44,7 +87,7 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards.UnitTests
             var timerInfo = new TimerInfo();
             var exception = new Exception("Test exception");
 
-            var sut = new UpdateStandardsFunction(mockLogger.Object);
+            var sut = new UpdateStandardsFunction(_configuration, mockLogger.Object);
 
             mockDurableTaskClient
                 .Setup(x => x.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None))
