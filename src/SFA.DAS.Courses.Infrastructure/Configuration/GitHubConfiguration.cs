@@ -9,6 +9,6 @@ namespace SFA.DAS.Courses.Infrastructure.Configuration
         public string UserName { get; set; }
         public string Email { get; set; }
         public GitHubAccessTokenConfiguration AccessTokenConfiguration { get; set; }
-        public static string GitHubUrl => "https://api.github.com/repos/{0}/{1}/contents/";
+        public static string GitHubUrl => "https://api.github.com/repos/{0}/contents/";
     }
 }

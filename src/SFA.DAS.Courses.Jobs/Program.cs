@@ -20,7 +20,7 @@ namespace SFA.DAS.Courses.Jobs
                 {
                     config.AddConfiguration();
                 })
-                .ConfigureServices(async (context, services) =>
+                .ConfigureServices((context, services) =>
                 {
                     try
                     {

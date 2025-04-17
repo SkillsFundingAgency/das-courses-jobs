@@ -14,7 +14,7 @@ namespace SFA.DAS.Courses.Jobs.Services
     public class GitHubRepositoryService : IGitHubRepositoryService
     {
         private readonly HttpClient _gitHubContentsClient;
-        private readonly ApplicationConfiguration _applicationConfiguration;
+        private readonly GitHubConfiguration _gitHubConfiguration;
 
         public GitHubRepositoryService(IHttpClientFactory httpClientFactory,
             GitHubBearerTokenHolder bearerTokenHolder,
@@ -22,7 +22,7 @@ namespace SFA.DAS.Courses.Jobs.Services
         {
             _gitHubContentsClient = httpClientFactory.CreateClient("github-contents");
             _gitHubContentsClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerTokenHolder.BearerToken);
-            _applicationConfiguration = options.Value;
+            _gitHubConfiguration = options.Value.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration;
         }
 
         public async Task UpdateDocument(string fileNamePrefix, (string? Sha, string? Content) existingFile, string updatedContent, string logProgress, ILogger log)
@@ -31,7 +31,7 @@ namespace SFA.DAS.Courses.Jobs.Services
             var request = new CreateFileRequest
             {
                 Content = GetEncodedContent(updatedContent),
-                Committer = new Committer { Name = _applicationConfiguration.GitHubConfiguration.UserName, Email = _applicationConfiguration.GitHubConfiguration.Email }
+                Committer = new Committer { Name = _gitHubConfiguration.UserName, Email = _gitHubConfiguration.Email }
             };
 
             if (existingFile.Sha != null)

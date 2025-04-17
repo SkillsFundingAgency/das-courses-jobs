@@ -45,10 +45,17 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
 
             _config = new ApplicationConfiguration
             {
-                GitHubConfiguration = new GitHubConfiguration
+                FunctionsConfiguration = new FunctionsConfiguration
                 {
-                    UserName = "TestUser",
-                    Email = "testuser@example.com"
+                    UpdateStandardsConfiguration = new UpdateStandardsConfiguration
+                    {
+                        GitHubConfiguration = new GitHubConfiguration
+                        {
+                            UserName = "TestUser",
+                            Email = "testuser@example.com"
+                        },
+                        Enabled = true
+                    }
                 }
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
@@ -149,8 +156,8 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             deserializedRequest.Content.Should().Be(Convert.ToBase64String(UTF8Encoding.Default.GetBytes(updatedContent)));
             deserializedRequest.Message.Should().Be($"Updating {fileNamePrefix}.json");
             deserializedRequest.Committer.Should().NotBeNull();
-            deserializedRequest.Committer.Name.Should().Be(_config.GitHubConfiguration.UserName);
-            deserializedRequest.Committer.Email.Should().Be(_config.GitHubConfiguration.Email);
+            deserializedRequest.Committer.Name.Should().Be(_config.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.UserName);
+            deserializedRequest.Committer.Email.Should().Be(_config.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.Email);
         }
 
         [Test]
@@ -230,8 +237,8 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             deserializedRequest.Content.Should().Be(Convert.ToBase64String(UTF8Encoding.Default.GetBytes(updatedContent)));
             deserializedRequest.Message.Should().Be($"Adding {fileNamePrefix}.json");
             deserializedRequest.Committer.Should().NotBeNull();
-            deserializedRequest.Committer.Name.Should().Be(_config.GitHubConfiguration.UserName);
-            deserializedRequest.Committer.Email.Should().Be(_config.GitHubConfiguration.Email);
+            deserializedRequest.Committer.Name.Should().Be(_config.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.UserName);
+            deserializedRequest.Committer.Email.Should().Be(_config.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.Email);
         }
     
         [Test]

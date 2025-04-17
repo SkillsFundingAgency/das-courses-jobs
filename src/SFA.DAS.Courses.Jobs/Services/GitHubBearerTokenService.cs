@@ -19,8 +19,9 @@ namespace SFA.DAS.Courses.Jobs.Services
             GitHubBearerTokenHolder bearerTokenHolder,
             ILogger<GitHubBearerTokenService> logger)
         {
-            _keyVaultIdentifier = configuration.GitHubConfiguration.AccessTokenConfiguration.KeyVaultIdentifier;
-            _keyVaultSecretName = configuration.GitHubConfiguration.AccessTokenConfiguration.KeyVaultSecretName;
+            var gitHubAccessTokenConfiguration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.AccessTokenConfiguration;
+            _keyVaultIdentifier = gitHubAccessTokenConfiguration.KeyVaultIdentifier;
+            _keyVaultSecretName = gitHubAccessTokenConfiguration.KeyVaultSecretName;
             _bearerTokenHolder = bearerTokenHolder;
             _logger = logger;
         }

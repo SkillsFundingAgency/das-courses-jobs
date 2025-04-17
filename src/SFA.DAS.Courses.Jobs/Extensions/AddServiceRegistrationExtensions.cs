@@ -16,10 +16,11 @@ namespace SFA.DAS.Courses.Jobs.Extensions
     {
         public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, ApplicationConfiguration configuration)
         {
+            var gitHubConfiguration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration;
             services.AddHttpClient("github-contents", client =>
             {
-                client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, configuration.GitHubConfiguration.UserName, configuration.GitHubConfiguration.RepositoryName));
-                client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({configuration.GitHubConfiguration.Email})");
+                client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, gitHubConfiguration.RepositoryName));
+                client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({gitHubConfiguration.Email})");
             });
             
             services.AddHttpClient("ifate");
