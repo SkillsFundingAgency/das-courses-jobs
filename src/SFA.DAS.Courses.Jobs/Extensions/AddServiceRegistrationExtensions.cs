@@ -26,6 +26,15 @@ namespace SFA.DAS.Courses.Jobs.Extensions
             services.AddHttpClient("ifate");
 
             services.AddSingleton<GitHubBearerTokenHolder>();
+            services.AddSingleton<ISecretClient>(provider =>
+            {
+                var vaultName = gitHubConfiguration
+                    .AccessTokenConfiguration
+                    .KeyVaultIdentifier;
+
+                return new AzureSecretClient(vaultName);
+            });
+
             services.AddTransient<IApprenticeshipStandardsService, ApprenticeshipStandardsService>();
             services.AddTransient<IGitHubRepositoryService, GitHubRepositoryService>();
 
