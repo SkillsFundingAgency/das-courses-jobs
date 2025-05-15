@@ -1,7 +1,9 @@
 ﻿using System.Globalization;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -12,12 +14,15 @@ namespace SFA.DAS.Courses.Jobs.Services
     public class GitHubRepositoryService : IGitHubRepositoryService
     {
         private readonly HttpClient _gitHubContentsClient;
-        private readonly ApplicationConfiguration _applicationConfiguration;
+        private readonly GitHubConfiguration _gitHubConfiguration;
 
-        public GitHubRepositoryService(IHttpClientFactory httpClientFactory, IOptions<ApplicationConfiguration> options)
+        public GitHubRepositoryService(IHttpClientFactory httpClientFactory,
+            GitHubBearerTokenHolder bearerTokenHolder,
+            IOptions<ApplicationConfiguration> options)
         {
             _gitHubContentsClient = httpClientFactory.CreateClient("github-contents");
-            _applicationConfiguration = options.Value;
+            _gitHubContentsClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerTokenHolder.BearerToken);
+            _gitHubConfiguration = options.Value.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration;
         }
 
         public async Task UpdateDocument(string fileNamePrefix, (string? Sha, string? Content) existingFile, string updatedContent, string logProgress, ILogger log)
@@ -26,7 +31,7 @@ namespace SFA.DAS.Courses.Jobs.Services
             var request = new CreateFileRequest
             {
                 Content = GetEncodedContent(updatedContent),
-                Committer = new Committer { Name = _applicationConfiguration.GitHubUserName, Email = _applicationConfiguration.GitHubEmail }
+                Committer = new Committer { Name = _gitHubConfiguration.UserName, Email = _gitHubConfiguration.Email }
             };
 
             if (existingFile.Sha != null)

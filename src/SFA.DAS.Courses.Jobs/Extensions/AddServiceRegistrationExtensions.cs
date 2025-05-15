@@ -16,14 +16,24 @@ namespace SFA.DAS.Courses.Jobs.Extensions
     {
         public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, ApplicationConfiguration configuration)
         {
+            var gitHubConfiguration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration;
             services.AddHttpClient("github-contents", client =>
             {
-                client.BaseAddress = new Uri(string.Format(ApplicationConfiguration.GitHubUrl, configuration.GitHubUserName, configuration.GitHubRepositoryName));
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {configuration.GitHubAccessToken}");
-                client.DefaultRequestHeaders.Add("User-Agent", "StandardsVersioning");
+                client.BaseAddress = new Uri(string.Format(GitHubConfiguration.GitHubUrl, gitHubConfiguration.RepositoryName));
+                client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({gitHubConfiguration.Email})");
             });
             
             services.AddHttpClient("ifate");
+
+            services.AddSingleton<GitHubBearerTokenHolder>();
+            services.AddSingleton<ISecretClient>(provider =>
+            {
+                var vaultName = gitHubConfiguration
+                    .AccessTokenConfiguration
+                    .KeyVaultIdentifier;
+
+                return new AzureSecretClient(vaultName);
+            });
 
             services.AddTransient<IApprenticeshipStandardsService, ApprenticeshipStandardsService>();
             services.AddTransient<IGitHubRepositoryService, GitHubRepositoryService>();
