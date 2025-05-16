@@ -34,7 +34,7 @@ namespace SFA.DAS.Courses.Jobs
                             ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
                         services.AddServiceRegistrations(applicationConfig);
-                        
+
                         var coursesApiConfig = context.Configuration
                             .GetSection(nameof(CoursesApiClientConfiguration))
                             .Get<CoursesApiClientConfiguration>()
@@ -49,10 +49,6 @@ namespace SFA.DAS.Courses.Jobs
                         Console.WriteLine($"Exception in ConfigureService: {ex}");
                         throw;
                     }
-                })
-                .ConfigureLogging((hostingContext, logging) =>
-                {
-                    logging.AddLogging();
                 })
                 .Build();
 
