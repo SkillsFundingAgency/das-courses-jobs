@@ -22,7 +22,7 @@ a GitHub repository allows history and change comparison to be made between date
 ```
 * A clone of this repository
 * A code editor that supports Azure functions and .NetCore 8.0
-* A GitHub repository which is a fork of T.B.D*
+* A GitHub repository which is a fork of SkillsFundingAgency/StandardsData
 ```
 ### Config
 
@@ -34,22 +34,20 @@ This utility uses the standard Apprenticeship Service configuration. All configu
 * GitHub access token which is a fine-grained personal access token created by the above user with access to the above repository.
 ```
 
-AppSettings.Development.json file
+local.settings.json file
 ```json
 {
-    "Logging": {
-      "LogLevel": {
-        "Default": "Information",
-        "Microsoft": "Warning",
-        "Microsoft.Hosting.Lifetime": "Information"
-      }
-    },
-    "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true;",
-    "ConfigNames": "SFA.DAS.Courses.Jobs",
-    "EnvironmentName": "LOCAL",
-    "Version": "1.0",
-    "APPINSIGHTS_INSTRUMENTATIONKEY": ""
-  }  
+    "IsEncrypted": false,
+    "Values": {
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+      "ConfigNames": "SFA.DAS.Courses.Jobs",
+      "EnvironmentName": "LOCAL",
+      "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
+      "UpdateStandardsTimerSchedule": "0 0 1 1 *",
+      "GitHubBearerToken": ""
+  }
+}
 ```
 
 Azure Table Storage config
@@ -62,11 +60,37 @@ Data:
 
 ```json
 {
-  "GitHubRepositoryName": "",
-  "GitHubUserName": "",
-  "GitHubAccessToken": ""
+  "CoursesApiClientConfiguration": {
+    "ApiBaseUrl": "",
+    "IdentifierUri": "",
+    "Version": ""
+  },
+  "InstituteOfApprenticeshipsStandardsUrl": "https://www.instituteforapprenticeships.org/api/apprenticeshipstandards/",
+  "FunctionsConfiguration": {
+    "UpdateStandardsConfiguration": {
+      "GitHubConfiguration": {
+        "RepositoryName": "",
+        "UserName": "",
+        "Email": "",
+        "AccessTokenConfiguration": {
+          "KeyVaultIdentifier": "",
+          "KeyVaultSecretName": "GitHubBearerToken"
+        }
+      },
+      "Enabled": true
+    }
+  }
 }
 ```
+### GitHub Integration
+
+The storage config needs to contain the RepositoryName in the format "Scope/RepositoryName", a UserName of an account which can access the respository and the associated Email for the account.
+
+When running locally the local.settings.json file needs to contain a KeyVaultSecretName key which matches the value of the KeyVaultSecretName in the storage config.
+
+When running locally add a fine-grained access token to the local.settings.json file which allows access to the RepositoryName with permissions of Contents (Read + Write)
+
+When running in an environment add the fine-grained access token to the KeyVaultIdentifier secrets collection see https://skillsfundingagency.atlassian.net/wiki/spaces/NDL/pages/4894261340/Courses+Jobs+GitHub+Integration
 
 ## Technologies
 
