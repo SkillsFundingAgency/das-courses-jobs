@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using SFA.DAS.Courses.Jobs.Exceptions;
 using SFA.DAS.Courses.Jobs.Services;
 
 namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
@@ -23,6 +24,8 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
         [Function("StoreGitHubActivity")]
         public async Task RunActivity([ActivityTrigger] string name)
         {
+            bool success = true;
+            
             _logger.LogInformation("{ActivityName} started at {DateTimeNow}", nameof(StoreGitHubActivity), DateTime.Now);
 
             var standards = await _apprenticeshipStandardsService.GetAllStandards();
@@ -46,8 +49,12 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
                 catch(Exception ex) 
                 {
                     _logger.LogInformation(ex, "Unable to process {StandardName} skipping", standard.Key);
+                    success = false;
                 }
             }
+
+            if (!success)
+                throw new StoreGitHubActivityException("One or more standards could not be stored in GitHub, processing will be retried if possible");
         }
     }
 }
