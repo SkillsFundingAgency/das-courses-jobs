@@ -32,14 +32,21 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
 
             foreach (var standard in standards)
             {
-                var existingFile = await _gitHubRepositoryService.GetFileInformation(standard.Key, _logger);
+                try
+                {
+                    var existingFile = await _gitHubRepositoryService.GetFileInformation(standard.Key, _logger);
 
-                await _gitHubRepositoryService.UpdateDocument(
-                    standard.Key,
-                    existingFile,
-                    standard.Value,
-                    $"{keys.IndexOf(standard.Key)+1}/{keys.Count}",
-                    _logger);
+                    await _gitHubRepositoryService.UpdateDocument(
+                        standard.Key,
+                        existingFile,
+                        standard.Value,
+                        $"{keys.IndexOf(standard.Key) + 1}/{keys.Count}",
+                        _logger);
+                }
+                catch(Exception ex) 
+                {
+                    _logger.LogInformation(ex, "Unable to process {StandardName} skipping", standard.Key);
+                }
             }
         }
     }

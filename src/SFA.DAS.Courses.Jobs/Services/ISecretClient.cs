@@ -2,7 +2,7 @@
 {
     public interface ISecretClient
     {
-        Task<string> GetSecretAsync(string secretName, CancellationToken cancellationToken);
+        Task<string?> GetSecretAsync(string secretName, CancellationToken cancellationToken);
     }
 
 }
