@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -52,6 +53,43 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
                 _mockStandardsService.Object,
                 _mockGitHubService.Object,
                 _mockBackgroundTaskQueue.Object);
+        }
+
+        [Test]
+        public void UpdateStandardsTimer_WhenEnabled_QueuesBackgroundWorkItem()
+        {
+            // Arrange
+            var timerInfo = new TimerInfo();
+
+            // Act
+            _sut.UpdateStandardsTimer(timerInfo);
+
+            // Assert
+            _mockBackgroundTaskQueue.Verify(q =>
+                q.QueueBackgroundWorkItem(
+                    It.IsAny<Func<CancellationToken, Task>>(),
+                    nameof(UpdateStandardsFunction.RunUpdateStandards),
+                    It.IsAny<Action<TimeSpan, ILogger<TaskQueueHostedService>>>()),
+                Times.Once);
+        }
+
+        [Test]
+        public void UpdateStandardsTimer_WhenDisabled_DoesNotQueueWork()
+        {
+            // Arrange
+            _config.FunctionsConfiguration.UpdateStandardsConfiguration.Enabled = false;
+            var timerInfo = new TimerInfo();
+
+            // Act
+            _sut.UpdateStandardsTimer(timerInfo);
+
+            // Assert
+            _mockBackgroundTaskQueue.Verify(
+                q => q.QueueBackgroundWorkItem(
+                    It.IsAny<Func<CancellationToken, Task>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Action<TimeSpan, ILogger<TaskQueueHostedService>>>()),
+                Times.Never);
         }
 
         [Test]
@@ -150,20 +188,6 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
                 It.Is<It.IsAnyType>((v, _) => v.ToString().Contains("failures after")),
                 null,
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
-        }
-
-        [Test]
-        public async Task RunUpdateStandards_Disabled_ShouldNotRun()
-        {
-            // Arrange
-            _config.FunctionsConfiguration.UpdateStandardsConfiguration.Enabled = false;
-
-            // Act
-            await _sut.RunUpdateStandards();
-
-            // Assert
-            _mockStandardsService.Verify(x => x.GetAllStandards(), Times.Never);
-            _mockGitHubService.Verify(x => x.UpdateDocument(It.IsAny<string>(), It.IsAny<(string, string)>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
     }
 }
