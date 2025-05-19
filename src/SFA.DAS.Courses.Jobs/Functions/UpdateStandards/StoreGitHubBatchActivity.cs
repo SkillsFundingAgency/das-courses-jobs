@@ -31,14 +31,13 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
                     var logProgress = $"{++index}/{total}";
                     _logger.LogInformation("{Progress} Processing {Key}", logProgress, key);
 
-                    var existingFile = await _gitHubRepositoryService.GetFileInformation(key, _logger);
+                    var existingFile = await _gitHubRepositoryService.GetFileInformation(key);
 
                     await _gitHubRepositoryService.UpdateDocument(
                         key,
                         existingFile,
                         value,
-                        logProgress,
-                        _logger);
+                        logProgress);
                 }
                 catch (Exception ex)
                 {

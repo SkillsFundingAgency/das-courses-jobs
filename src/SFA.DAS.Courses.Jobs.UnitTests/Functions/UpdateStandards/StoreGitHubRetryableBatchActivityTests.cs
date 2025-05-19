@@ -39,12 +39,12 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
             };
 
             _mockGitHubRepositoryService
-                .Setup(s => s.GetFileInformation(It.IsAny<string>(), It.IsAny<ILogger>()))
+                .Setup(s => s.GetFileInformation(It.IsAny<string>()))
                 .ReturnsAsync(("sha123", "existing content"));
 
             _mockGitHubRepositoryService
                 .Setup(x => x.UpdateDocument(
-                    It.IsAny<string>(), It.IsAny<(string, string)>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ILogger>()))
+                    It.IsAny<string>(), It.IsAny<(string, string)>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -65,11 +65,11 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
             };
 
             _mockGitHubRepositoryService
-                .Setup(x => x.GetFileInformation("ST0001", It.IsAny<ILogger>()))
+                .Setup(x => x.GetFileInformation("ST0001"))
                 .ReturnsAsync(("sha123", "existing content"));
 
             _mockGitHubRepositoryService
-                .Setup(x => x.GetFileInformation("ST0002", It.IsAny<ILogger>()))
+                .Setup(x => x.GetFileInformation("ST0002"))
                 .ThrowsAsync(new Exception("GitHub error"));
 
             // Act
@@ -90,7 +90,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
             };
 
             _mockGitHubRepositoryService
-                .Setup(x => x.GetFileInformation(It.IsAny<string>(), It.IsAny<ILogger>()))
+                .Setup(x => x.GetFileInformation(It.IsAny<string>()))
                 .ThrowsAsync(new Exception("API down"));
 
             // Act

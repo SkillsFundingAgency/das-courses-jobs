@@ -23,7 +23,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
     {
         private Mock<IHttpClientFactory> _httpClientFactoryMock;
         private Mock<IOptions<ApplicationConfiguration>> _optionsMock;
-        private Mock<ILogger> _loggerMock;
+        private Mock<ILogger<GitHubRepositoryService>> _loggerMock;
         private HttpClient _httpClient;
         private Mock<HttpMessageHandler> _httpMessageHandlerMock;
         private GitHubRepositoryService _sut;
@@ -34,7 +34,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
         {
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _optionsMock = new Mock<IOptions<ApplicationConfiguration>>();
-            _loggerMock = new Mock<ILogger>();
+            _loggerMock = new Mock<ILogger<GitHubRepositoryService>>();
             _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
             _httpClient.BaseAddress = new Uri("https://github.com/");
@@ -60,7 +60,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
 
-            _sut = new GitHubRepositoryService(_httpClientFactoryMock.Object, new GitHubBearerTokenHolder(), _optionsMock.Object);
+            _sut = new GitHubRepositoryService(_httpClientFactoryMock.Object, new GitHubBearerTokenHolder(), _optionsMock.Object, _loggerMock.Object);
         }
 
         [Test]
@@ -73,7 +73,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             var logProgress = "Progress";
 
             // Act
-            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             _loggerMock.VerifyLogging(LogLevel.Information, $"{logProgress} Skipping {fileNamePrefix}.json", Times.Once);
@@ -101,7 +101,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             _loggerMock.VerifyLogging(LogLevel.Information, $"{logProgress} Updating {fileNamePrefix}.json", Times.Once);
@@ -132,7 +132,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             _httpMessageHandlerMock.Protected().Verify(
@@ -182,7 +182,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             _loggerMock.VerifyLogging(LogLevel.Information, $"{logProgress} Adding {fileNamePrefix}.json", Times.Once);
@@ -213,7 +213,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             _httpMessageHandlerMock.Protected().Verify(
@@ -262,7 +262,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            Func<Task> act = async () => await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress, _loggerMock.Object);
+            Func<Task> act = async () => await _sut.UpdateDocument(fileNamePrefix, existingFile, updatedContent, logProgress);
 
             // Assert
             await act.Should().ThrowAsync<GitHubFileException>().WithMessage("Error trying to update file*");
@@ -286,7 +286,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            var result = await _sut.GetFileInformation(fileNamePrefix, _loggerMock.Object);
+            var result = await _sut.GetFileInformation(fileNamePrefix);
 
             // Assert
             result.Sha.Should().Be("sha123");
@@ -308,7 +308,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            Func<Task> act = async () => await _sut.GetFileInformation(fileNamePrefix, _loggerMock.Object);
+            Func<Task> act = async () => await _sut.GetFileInformation(fileNamePrefix);
 
             // Assert
             await act.Should().ThrowAsync<GitHubFileException>().WithMessage("Error trying to get file information*");
@@ -330,7 +330,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 });
 
             // Act
-            var result = await _sut.GetFileInformation(fileNamePrefix, _loggerMock.Object);
+            var result = await _sut.GetFileInformation(fileNamePrefix);
 
             // Assert
             result.Sha.Should().BeNull();
