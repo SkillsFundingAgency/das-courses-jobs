@@ -53,16 +53,8 @@ namespace SFA.DAS.Courses.Jobs
                 })
                 .ConfigureLogging(logging =>
                 {
-                    // This rule filters logs to capture only warnings and errors, removing this rule will allow Information logs to be captured
-                    logging.Services.Configure<LoggerFilterOptions>(options =>
-                    {
-                        LoggerFilterRule? defaultRule = options.Rules.FirstOrDefault(rule => rule.ProviderName
-                            == "Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider");
-                        if (defaultRule is not null)
-                        {
-                            options.Rules.Remove(defaultRule);
-                        }
-                    });
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Information);
                 })
                 .Build();
 
