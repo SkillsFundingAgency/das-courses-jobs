@@ -1,54 +1,113 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using SFA.DAS.Courses.Infrastructure.Configuration;
+using SFA.DAS.Courses.Jobs.Services;
+using SFA.DAS.Courses.Jobs.TaskQueue;
 
 namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
 {
     public class UpdateStandardsFunction
     {
-        private readonly UpdateStandardsConfiguration _configuration;
         private readonly ILogger<UpdateStandardsFunction> _logger;
+        private readonly UpdateStandardsConfiguration _configuration;
+        private readonly IApprenticeshipStandardsService _apprenticeshipStandardsService;
+        private readonly IGitHubRepositoryService _gitHubRepositoryService;
+        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
 
-        public UpdateStandardsFunction(ApplicationConfiguration configuration, ILogger<UpdateStandardsFunction> logger)
+        public UpdateStandardsFunction(
+            ApplicationConfiguration configuration,
+            ILogger<UpdateStandardsFunction> logger,
+            IApprenticeshipStandardsService apprenticeshipStandardsService,
+            IGitHubRepositoryService gitHubRepositoryService,
+            IBackgroundTaskQueue backgroundTaskQueue)
         {
-            _configuration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration;
             _logger = logger;
+            _configuration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration;
+            _apprenticeshipStandardsService = apprenticeshipStandardsService;
+            _gitHubRepositoryService = gitHubRepositoryService;
+            _backgroundTaskQueue = backgroundTaskQueue;
         }
 
         [Function(nameof(UpdateStandardsTimer))]
-        public async Task UpdateStandardsTimer([TimerTrigger("%UpdateStandardsTimerSchedule%")] TimerInfo myTimer,
-            [DurableClient] DurableTaskClient client)
+        public void UpdateStandardsTimer([TimerTrigger("%UpdateStandardsTimerSchedule%")] TimerInfo timerInfo)
         {
-            if(_configuration.Enabled)
-                await Run(nameof(UpdateStandardsTimer), client);
+            if (_configuration.Enabled)
+                QueueUpdateStandards();
         }
 
 #if DEBUG
         [Function(nameof(UpdateStandardsHttp))]
-        public async Task UpdateStandardsHttp(
-            [HttpTrigger(AuthorizationLevel.Function, "POST")] HttpRequest request,
-            [DurableClient] DurableTaskClient client)
+        public void UpdateStandardsHttp(
+            [HttpTrigger(AuthorizationLevel.Function, "POST")] HttpRequest req)
         {
             if (_configuration.Enabled)
-                await Run(nameof(UpdateStandardsHttp), client);
+                QueueUpdateStandards();
         }
 #endif
 
-        private async Task Run(string functionName, [DurableClient] DurableTaskClient client)
+        private void QueueUpdateStandards()
         {
-            try
+            _backgroundTaskQueue.QueueBackgroundWorkItem(
+                    async ct => await RunUpdateStandards(),
+                    nameof(RunUpdateStandards),
+                    (duration, log) =>
+                    {
+                        log.LogInformation("Completed request to {FunctionName} in {Duration}", nameof(RunUpdateStandards), duration);
+                    });
+        }
+        
+        public async Task RunUpdateStandards()
+        {
+            _logger.LogInformation("UpdateStandards function started");
+
+            var allStandards = await _apprenticeshipStandardsService.GetAllStandards();
+
+            _logger.LogInformation("Retrieved {Count} standards", allStandards.Count);
+
+            var toProcess = new Dictionary<string, string>(allStandards);
+            const int retryLimit = 3;
+            int attempt = 0;
+
+            while (toProcess.Any() && attempt++ < retryLimit)
             {
-                _logger.LogInformation("{FunctionName} has been triggered", functionName);
+                _logger.LogInformation("Attempt {Attempt} - processing {Count} standards", attempt, toProcess.Count);
+                var failed = new Dictionary<string, string>();
+                int index = 0;
+                int total = toProcess.Count;
 
-                string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(nameof(UpdateStandardsOrchestration), CancellationToken.None);
+                foreach (var (key, value) in toProcess)
+                {
+                    try
+                    {
+                        var logProgress = $"{++index}/{total}";
+                        _logger.LogInformation("{Progress} Processing {Key}", logProgress, key);
 
-                _logger.LogInformation("{FunctionName} has started orchestration with {InstanceId}", functionName, instanceId);
+                        var existingFile = await _gitHubRepositoryService.GetFileInformation(key);
+
+                        await _gitHubRepositoryService.UpdateDocument(
+                            key, 
+                            existingFile, 
+                            value, 
+                            logProgress);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to process standard {Key}", key);
+                        failed[key] = value;
+                    }
+                }
+
+                toProcess = failed;
             }
-            catch (Exception ex)
+
+            if (toProcess.Any())
             {
-                _logger.LogError(ex, "{FunctionName} has failed", functionName);
+                _logger.LogWarning("UpdateStandards completed with {Count} failures after {Retries} attempts", toProcess.Count, retryLimit);
+            }
+            else
+            {
+                _logger.LogInformation("UpdateStandards completed successfully");
             }
         }
     }

@@ -5,6 +5,7 @@ using SFA.DAS.Courses.Infrastructure.Api;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Infrastructure.HttpRequestHandlers;
 using SFA.DAS.Courses.Jobs.Services;
+using SFA.DAS.Courses.Jobs.TaskQueue;
 using SFA.DAS.Http.Configuration;
 using SFA.DAS.Http.MessageHandlers;
 using SFA.DAS.Http.TokenGenerators;
@@ -23,7 +24,12 @@ namespace SFA.DAS.Courses.Jobs.Extensions
                 client.DefaultRequestHeaders.Add("User-Agent", $"SFA.DAS.Courses.Jobs ({gitHubConfiguration.Email})");
             });
             
-            services.AddHttpClient("ifate");
+            services.AddHttpClient("ifate", client =>
+            {
+                client.Timeout = TimeSpan.FromMinutes(2);
+            });
+
+            services.AddBackgroundServices();
 
             services.AddSingleton<GitHubBearerTokenHolder>();
             services.AddSingleton<ISecretClient>(provider =>
@@ -58,6 +64,13 @@ namespace SFA.DAS.Courses.Jobs.Extensions
             services.AddTransient<IManagedIdentityClientConfiguration>((_) => configuration);
             services.AddTransient<IManagedIdentityTokenGenerator, ManagedIdentityTokenGenerator>();
 
+            return services;
+        }
+
+        public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+        {
+            services.AddHostedService<TaskQueueHostedService>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
             return services;
         }
     }

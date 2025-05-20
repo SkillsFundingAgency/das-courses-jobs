@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Extensions;
 using SFA.DAS.Courses.Jobs.Services;
@@ -34,7 +35,7 @@ namespace SFA.DAS.Courses.Jobs
                             ?? throw new InvalidOperationException("Configuration is missing or invalid.");
 
                         services.AddServiceRegistrations(applicationConfig);
-                        
+
                         var coursesApiConfig = context.Configuration
                             .GetSection(nameof(CoursesApiClientConfiguration))
                             .Get<CoursesApiClientConfiguration>()
@@ -50,9 +51,10 @@ namespace SFA.DAS.Courses.Jobs
                         throw;
                     }
                 })
-                .ConfigureLogging((hostingContext, logging) =>
+                .ConfigureLogging(logging =>
                 {
-                    logging.AddLogging();
+                    logging.AddConsole();
+                    logging.SetMinimumLevel(LogLevel.Information);
                 })
                 .Build();
 

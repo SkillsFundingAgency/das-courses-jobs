@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -15,17 +14,20 @@ namespace SFA.DAS.Courses.Jobs.Services
     {
         private readonly HttpClient _gitHubContentsClient;
         private readonly GitHubConfiguration _gitHubConfiguration;
+        private readonly ILogger<GitHubRepositoryService> _logger;
 
         public GitHubRepositoryService(IHttpClientFactory httpClientFactory,
             GitHubBearerTokenHolder bearerTokenHolder,
-            IOptions<ApplicationConfiguration> options)
+            IOptions<ApplicationConfiguration> options,
+            ILogger<GitHubRepositoryService> logger)
         {
             _gitHubContentsClient = httpClientFactory.CreateClient("github-contents");
             _gitHubContentsClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearerTokenHolder.BearerToken);
             _gitHubConfiguration = options.Value.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration;
+            _logger = logger;
         }
 
-        public async Task UpdateDocument(string fileNamePrefix, (string? Sha, string? Content) existingFile, string updatedContent, string logProgress, ILogger log)
+        public async Task UpdateDocument(string fileNamePrefix, (string? Sha, string? Content) existingFile, string updatedContent, string logProgress)
         {
             var fileName = GetFileName(fileNamePrefix);
             var request = new CreateFileRequest
@@ -39,7 +41,7 @@ namespace SFA.DAS.Courses.Jobs.Services
                 var existingContent = existingFile.Content != null ? UTF8Encoding.Default.GetString(Convert.FromBase64String(existingFile.Content)) : null;
                 if (string.Compare(updatedContent, existingContent, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase) == 0)
                 {
-                    log.LogInformation("{Info} Skipping {FileName}", logProgress, fileName);
+                    _logger.LogInformation("{Info} Skipping {FileName}", logProgress, fileName);
                     return;
                 }
                 request.Sha = existingFile.Sha;
@@ -55,14 +57,14 @@ namespace SFA.DAS.Courses.Jobs.Services
             if (!response.IsSuccessStatusCode)
             {
                 var error = $"Error trying to update file - {response}";
-                log.LogError(error);
+                _logger.LogError(error);
                 throw new GitHubFileException(error);
             }
 
-            log.LogInformation("{Info} {RequestMessage}", logProgress, request.Message);
+            _logger.LogInformation("{Info} {RequestMessage}", logProgress, request.Message);
         }
 
-        public async Task<(string? Sha, string? Content)> GetFileInformation(string fileNamePrefix, ILogger log)
+        public async Task<(string? Sha, string? Content)> GetFileInformation(string fileNamePrefix)
         {
             var response = await _gitHubContentsClient.GetAsync(GetFileName(fileNamePrefix));
             if (response.IsSuccessStatusCode)
@@ -78,7 +80,7 @@ namespace SFA.DAS.Courses.Jobs.Services
             if (response.StatusCode != System.Net.HttpStatusCode.NotFound)
             {
                 var error = $"Error trying to get file information - {response}";
-                log.LogError(error);
+                _logger.LogError(error);
                 throw new GitHubFileException(error);
             }
 
