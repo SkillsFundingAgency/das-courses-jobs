@@ -34,8 +34,6 @@ namespace SFA.DAS.Courses.Jobs.Extensions
                 .Configure<IConfiguration>((settings, configuration) =>
                     configuration.Bind(settings));
 
-            services.AddSingleton(s => s.GetRequiredService<IOptions<ApplicationConfiguration>>().Value);
-
             return services;
         }
 

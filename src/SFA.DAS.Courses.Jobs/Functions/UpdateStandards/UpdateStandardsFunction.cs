@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Services;
 using SFA.DAS.Courses.Jobs.TaskQueue;
@@ -16,14 +17,14 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
 
         public UpdateStandardsFunction(
-            ApplicationConfiguration configuration,
+            IOptions<ApplicationConfiguration> configuration,
             ILogger<UpdateStandardsFunction> logger,
             IApprenticeshipStandardsService apprenticeshipStandardsService,
             IGitHubRepositoryService gitHubRepositoryService,
             IBackgroundTaskQueue backgroundTaskQueue)
         {
             _logger = logger;
-            _configuration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration;
+            _configuration = configuration.Value.FunctionsConfiguration.UpdateStandardsConfiguration;
             _apprenticeshipStandardsService = apprenticeshipStandardsService;
             _gitHubRepositoryService = gitHubRepositoryService;
             _backgroundTaskQueue = backgroundTaskQueue;
@@ -56,7 +57,7 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
                         log.LogInformation("Completed request to {FunctionName} in {Duration}", nameof(RunUpdateStandards), duration);
                     });
         }
-        
+
         public async Task RunUpdateStandards()
         {
             _logger.LogInformation("UpdateStandards function started");
@@ -86,9 +87,9 @@ namespace SFA.DAS.Courses.Jobs.Functions.UpdateStandards
                         var existingFile = await _gitHubRepositoryService.GetFileInformation(key);
 
                         await _gitHubRepositoryService.UpdateDocument(
-                            key, 
-                            existingFile, 
-                            value, 
+                            key,
+                            existingFile,
+                            value,
                             logProgress);
                     }
                     catch (Exception ex)
