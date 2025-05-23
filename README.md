@@ -45,12 +45,13 @@ local.settings.json file
       "EnvironmentName": "LOCAL",
       "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
       "UpdateStandardsTimerSchedule": "0 0 1 1 *",
-      "GitHubBearerToken": ""
+      "GitHubAccessToken": ""
   }
 }
 ```
+>`GitHubAccessToken` should be populated with a fine-grained personal access token created by the user with access to the GitHub repository. Go to https://github.com/settings/personal-access-tokens to generate a new token. The token should have full read-write access to a repository. 
 
-Azure Table Storage config
+#### Azure Table Storage config
 
 Row Key: SFA.DAS.Courses.Jobs_1.0
 
@@ -65,7 +66,11 @@ Data:
     "IdentifierUri": "",
     "Version": ""
   },
-  "InstituteOfApprenticeshipsStandardsUrl": "https://www.instituteforapprenticeships.org/api/apprenticeshipstandards/",
+  "InstituteOfApprenticeshipsApiConfiguration": {
+    "ApiBaseUrl": "https://www.instituteforapprenticeships.org/api/",
+    "StandardsPath": "apprenticeshipstandards",
+    "FoundationApprenticeshipsPath": "foundationapprenticeships"
+  },
   "FunctionsConfiguration": {
     "UpdateStandardsConfiguration": {
       "GitHubConfiguration": {
@@ -82,6 +87,7 @@ Data:
   }
 }
 ```
+
 ### GitHub Integration
 
 The storage config needs to contain the RepositoryName in the format "Scope/RepositoryName", a UserName of an account which can access the respository and the associated Email for the account.

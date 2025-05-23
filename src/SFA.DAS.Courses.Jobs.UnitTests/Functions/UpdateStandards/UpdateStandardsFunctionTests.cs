@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -19,7 +20,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
         private Mock<IApprenticeshipStandardsService> _mockStandardsService;
         private Mock<IGitHubRepositoryService> _mockGitHubService;
         private Mock<IBackgroundTaskQueue> _mockBackgroundTaskQueue;
-        private ApplicationConfiguration _config;
+        private IOptions<ApplicationConfiguration> _config;
         private UpdateStandardsFunction _sut;
 
         private readonly Dictionary<string, string> _testStandards = new()
@@ -36,7 +37,9 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
             _mockGitHubService = new Mock<IGitHubRepositoryService>();
             _mockBackgroundTaskQueue = new Mock<IBackgroundTaskQueue>();
 
-            _config = new ApplicationConfiguration
+
+
+            _config = Options.Create(new ApplicationConfiguration
             {
                 FunctionsConfiguration = new FunctionsConfiguration
                 {
@@ -45,7 +48,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
                         Enabled = true
                     }
                 }
-            };
+            });
 
             _sut = new UpdateStandardsFunction(
                 _config,
@@ -77,7 +80,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Functions.UpdateStandards
         public void UpdateStandardsTimer_WhenDisabled_DoesNotQueueWork()
         {
             // Arrange
-            _config.FunctionsConfiguration.UpdateStandardsConfiguration.Enabled = false;
+            _config.Value.FunctionsConfiguration.UpdateStandardsConfiguration.Enabled = false;
             var timerInfo = new TimerInfo();
 
             // Act

@@ -1,7 +1,6 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using SFA.DAS.Courses.Infrastructure.Api;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 
 namespace SFA.DAS.Courses.Jobs.Services
@@ -9,19 +8,35 @@ namespace SFA.DAS.Courses.Jobs.Services
     public class ApprenticeshipStandardsService : IApprenticeshipStandardsService
     {
         private readonly HttpClient _client;
-        private readonly ApplicationConfiguration _applicationConfiguration;
+        private readonly InstituteOfApprenticeshipsApiConfiguration _apiConfiguration;
+        private static JsonSerializerOptions JsonSerializerOptions = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
 
         public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory, IOptions<ApplicationConfiguration> options)
         {
             _client = httpClientFactory.CreateClient("ifate");
-            _applicationConfiguration = options.Value;
+            _apiConfiguration = options.Value.InstituteOfApprenticeshipsApiConfiguration;
+            _client.BaseAddress = new Uri(_apiConfiguration.ApiBaseUrl);
         }
 
         public async Task<Dictionary<string, string>> GetAllStandards()
         {
-            _client.BaseAddress = new Uri(_applicationConfiguration.InstituteOfApprenticeshipsStandardsUrl);
 
-            var response = await _client.GetAsync("");
+            var getStandardsTask = GetDocuments(_apiConfiguration.StandardsPath);
+
+            var getFoundationsTask = GetDocuments(_apiConfiguration.FoundationApprenticeshipsPath);
+
+            await Task.WhenAll(getStandardsTask, getFoundationsTask);
+
+            return getFoundationsTask.Result.Concat(getStandardsTask.Result).ToDictionary();
+        }
+
+        private async Task<Dictionary<string, string>> GetDocuments(string path)
+        {
+            var response = await _client.GetAsync(path);
             var result = await response.Content.ReadAsStringAsync();
             var rootElement = JsonDocument.Parse(result).RootElement;
             var documents = new Dictionary<string, string>();
@@ -39,11 +54,7 @@ namespace SFA.DAS.Courses.Jobs.Services
 
         private static string GetFormattedDocument(JsonElement element)
         {
-            return JsonSerializer.Serialize(element, new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
-            });
+            return JsonSerializer.Serialize(element, JsonSerializerOptions);
         }
     }
 }
