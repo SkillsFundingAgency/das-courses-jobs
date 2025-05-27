@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using SFA.DAS.Courses.Infrastructure.Configuration;
@@ -19,7 +20,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
         private GitHubBearerTokenHolder _tokenHolder;
 
         private const string SecretName = "my-secret";
-        private ApplicationConfiguration _appConfig;
+        private IOptions<ApplicationConfiguration> _appConfig;
 
         [SetUp]
         public void Setup()
@@ -29,7 +30,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             _mockConfig = new Mock<IConfiguration>();
             _tokenHolder = new GitHubBearerTokenHolder();
 
-            _appConfig = new ApplicationConfiguration
+            _appConfig = Options.Create(new ApplicationConfiguration
             {
                 FunctionsConfiguration = new FunctionsConfiguration
                 {
@@ -44,7 +45,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                         }
                     }
                 }
-            };
+            });
         }
 
         [Test]
@@ -52,7 +53,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
         {
             // Arrange
             _mockConfig.Setup(m => m["EnvironmentName"]).Returns("LOCAL");
-            _mockConfig.Setup(m => m[SecretName]).Returns("local-token");
+            _mockConfig.Setup(m => m[GitHubBearerTokenService.GitHubAccessTokenLocalEnvironmentName]).Returns("local-token");
 
             var service = new GitHubBearerTokenService(_appConfig, _tokenHolder, _mockSecretClient.Object, _mockLogger.Object, _mockConfig.Object);
 

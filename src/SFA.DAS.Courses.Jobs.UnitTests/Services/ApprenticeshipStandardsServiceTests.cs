@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
-using SFA.DAS.Courses.Infrastructure.Api;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Services;
 
@@ -40,7 +39,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             _optionsMock = new Mock<IOptions<ApplicationConfiguration>>();
             _config = new ApplicationConfiguration
             {
-                InstituteOfApprenticeshipsStandardsUrl = "http://standards.org"
+                InstituteOfApprenticeshipsApiConfiguration = new("http://standards.org/", "standards-path", "foundations-path")
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
 
@@ -69,7 +68,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
-                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("standards-path")),
                     ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
@@ -77,14 +76,39 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                     Content = new StringContent(mockResponseData)
                 });
 
+            var mockResponseFoundationData = @"
+            [
+                {
+                    ""referenceNumber"": ""FA0001"",
+                    ""version"": ""1.0"",
+                    ""title"": ""Test FA 1""
+                },
+                {
+                    ""referenceNumber"": ""FA0002"",
+                    ""version"": null,
+                    ""title"": ""Another FA""
+                }
+            ]";
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("foundations-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockResponseFoundationData)
+                });
+
             // Act
             var result = await _sut.GetAllStandards();
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().HaveCount(2);
-            result.Should().ContainKey("ST0001_1.0");
-            result.Should().ContainKey("ST0002_1.0");
+            result.Should().HaveCount(4);
+            result.Should().ContainKeys("ST0001_1.0", "ST0002_1.0", "FA0001_1.0", "FA0002_1.0");
 
             result["ST0001_1.0"].Should().Contain("Test Standard");
             result["ST0002_1.0"].Should().Contain("Another Standard");

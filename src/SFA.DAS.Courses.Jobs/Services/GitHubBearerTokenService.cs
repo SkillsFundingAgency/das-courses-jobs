@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 using SFA.DAS.Courses.Jobs.Exceptions;
 
@@ -8,28 +9,29 @@ namespace SFA.DAS.Courses.Jobs.Services
 {
     public class GitHubBearerTokenService : IHostedService
     {
+        public const string GitHubAccessTokenLocalEnvironmentName = "GitHubAccessToken";
         private readonly string _keyVaultSecretName;
         private readonly string? _environmentName;
         private readonly string? _localToken;
         private readonly GitHubBearerTokenHolder _bearerTokenHolder;
         private readonly ISecretClient _secretClient;
         private readonly ILogger<GitHubBearerTokenService> _logger;
-        
+
         public GitHubBearerTokenService(
-            ApplicationConfiguration configuration,
+            IOptions<ApplicationConfiguration> configuration,
             GitHubBearerTokenHolder bearerTokenHolder,
             ISecretClient secretClient,
             ILogger<GitHubBearerTokenService> logger,
             IConfiguration config)
         {
-            var gitHubAccessTokenConfiguration = configuration.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.AccessTokenConfiguration;
+            var gitHubAccessTokenConfiguration = configuration.Value.FunctionsConfiguration.UpdateStandardsConfiguration.GitHubConfiguration.AccessTokenConfiguration;
             _keyVaultSecretName = gitHubAccessTokenConfiguration.KeyVaultSecretName;
             _bearerTokenHolder = bearerTokenHolder;
             _secretClient = secretClient;
             _logger = logger;
-            
+
             _environmentName = config["EnvironmentName"];
-            _localToken = config[_keyVaultSecretName];
+            _localToken = config[GitHubAccessTokenLocalEnvironmentName];
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -51,7 +53,7 @@ namespace SFA.DAS.Courses.Jobs.Services
                 else
                 {
                     var keyvaultToken = await _secretClient.GetSecretAsync(_keyVaultSecretName, cancellationToken);
-                    _bearerTokenHolder.BearerToken = keyvaultToken;   
+                    _bearerTokenHolder.BearerToken = keyvaultToken;
                     _logger.LogInformation("Retrieved GitHub bearer token from Keyvault");
                 }
             }
