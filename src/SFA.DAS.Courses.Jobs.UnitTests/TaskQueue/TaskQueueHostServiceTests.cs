@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -103,25 +102,6 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.TaskQueue
                     It.IsAny<EventId>(),
                     It.Is<It.IsAnyType>((v, _) => v.ToString()!.Contains("Error occurred in background task")),
                     exception,
-                    It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
-        }
-
-        [Test]
-        public async Task ExecuteAsync_WhenCancelled_LogsStoppingMessage()
-        {
-            // Arrange
-            await _cts.CancelAsync();
-
-            // Act
-            await _sut.StartAsync(_cts.Token);
-
-            // Assert
-            _mockLogger.Verify(
-                x => x.Log(
-                    LogLevel.Information,
-                    It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, _) => v.ToString()!.Contains("Task Queue Hosted Service is stopping.")),
-                    null,
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
         }
     }

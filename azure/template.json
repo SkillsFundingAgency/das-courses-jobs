@@ -101,7 +101,8 @@
             "id": "[resourceId(subscription().subscriptionId, parameters('sharedEnvResourceGroup'), 'Microsoft.Network/routeTables', parameters('SharedRouteTableName'))]"
         },
         "emptyObject": {},
-        "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]"
+        "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
+        "loadStandardsDataSchedule":  "0 0 3 * * *"
     },
     "resources": [
         {
@@ -279,6 +280,10 @@
                                 {
                                     "name": "UpdateStandardsTimerSchedule",
                                     "value": "[parameters('updateStandardsTimerSchedule')]"
+                                },
+                                {
+                                    "name": "LoadStandardsDataSchedule",
+                                    "value": "[variables('loadStandardsDataSchedule')]"
                                 }
                             ]
                         }

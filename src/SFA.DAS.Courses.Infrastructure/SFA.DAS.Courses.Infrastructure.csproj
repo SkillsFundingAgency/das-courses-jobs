@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RestEase" Version="1.6.4" />
-    <PackageReference Include="SFA.DAS.Http" Version="3.2.69" />
+    <PackageReference Include="Refit" Version="10.1.6" />
+    <PackageReference Include="SFA.DAS.Api.Common" Version="17.1.159" />
     <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>

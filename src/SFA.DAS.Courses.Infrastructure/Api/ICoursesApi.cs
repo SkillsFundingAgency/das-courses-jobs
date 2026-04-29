@@ -1,10 +1,9 @@
-﻿using RestEase;
+﻿using Refit;
 
-namespace SFA.DAS.Courses.Infrastructure.Api
+namespace SFA.DAS.Courses.Infrastructure.Api;
+
+public interface ICoursesApi
 {
-    public interface ICoursesApi
-    {
-        [Get("/ops/dataload/StandardsImportUrl")]
-        Task<string> GetStandardsImportUrl();
-    }
+    [Post("/ops/dataload")]
+    Task LoadCoursesData(CancellationToken cancellationToken);
 }
