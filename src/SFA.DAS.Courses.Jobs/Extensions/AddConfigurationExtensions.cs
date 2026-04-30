@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using SFA.DAS.Configuration.AzureTableStorage;
 using SFA.DAS.Courses.Infrastructure.Configuration;
 
@@ -28,15 +27,6 @@ public static class AddConfigurationExtensions
             .AddOptions<ApplicationConfiguration>()
             .Configure<IConfiguration>((settings, configuration) =>
                 configuration.Bind(settings));
-
-        return services;
-    }
-
-    public static IServiceCollection ConfigureFromOptions<TOptions>(this IServiceCollection services, Func<ApplicationConfiguration, TOptions> func)
-        where TOptions : class, new()
-    {
-        services.AddSingleton(s =>
-            func(s.GetRequiredService<IOptions<ApplicationConfiguration>>().Value));
 
         return services;
     }
