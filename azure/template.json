@@ -102,7 +102,7 @@
         },
         "emptyObject": {},
         "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
-        "loadStandardsDataSchedule":  "0 0 3 * * *"
+        "loadCoursesDataSchedule":  "0 0 3 * * *"
     },
     "resources": [
         {
@@ -282,8 +282,8 @@
                                     "value": "[parameters('updateStandardsTimerSchedule')]"
                                 },
                                 {
-                                    "name": "LoadStandardsDataSchedule",
-                                    "value": "[variables('loadStandardsDataSchedule')]"
+                                    "name": "LoadCoursesDataSchedule",
+                                    "value": "[variables('loadCoursesDataSchedule')]"
                                 }
                             ]
                         }
