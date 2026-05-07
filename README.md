@@ -45,7 +45,10 @@ local.settings.json file
       "EnvironmentName": "LOCAL",
       "ConfigurationStorageConnectionString": "UseDevelopmentStorage=true",
       "UpdateStandardsTimerSchedule": "0 0 1 1 *",
-      "GitHubAccessToken": ""
+      "LoadCoursesDataSchedule": "0 0 3 * * *",
+      "GitHubAccessToken": "",
+      "AzureWebJobs.UpdateStandardsTimer.Disabled": "true",
+      "AzureWebJobs.TriggerLoadCoursesData.Disabled": "true"
   }
 }
 ```
