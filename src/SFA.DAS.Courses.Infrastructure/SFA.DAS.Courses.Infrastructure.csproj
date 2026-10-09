@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Refit" Version="10.1.6" />
+    <PackageReference Include="Refit" Version="16.3.0" />
     <PackageReference Include="SFA.DAS.Api.Common" Version="17.1.159" />
   </ItemGroup>
 
