@@ -8,7 +8,7 @@ namespace SFA.DAS.Courses.Jobs.Services
     public class ApprenticeshipStandardsService : IApprenticeshipStandardsService
     {
         private readonly HttpClient _client;
-        private readonly InstituteOfApprenticeshipsApiConfiguration _apiConfiguration;
+        private readonly SkillsEnglandApiConfiguration _apiConfiguration;
         private static JsonSerializerOptions JsonSerializerOptions = new()
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -18,20 +18,24 @@ namespace SFA.DAS.Courses.Jobs.Services
         public ApprenticeshipStandardsService(IHttpClientFactory httpClientFactory, IOptions<ApplicationConfiguration> options)
         {
             _client = httpClientFactory.CreateClient("ifate");
-            _apiConfiguration = options.Value.InstituteOfApprenticeshipsApiConfiguration;
+            _apiConfiguration = options.Value.SkillsEnglandApiConfiguration;
             _client.BaseAddress = new Uri(_apiConfiguration.ApiBaseUrl);
         }
 
         public async Task<Dictionary<string, string>> GetAllStandards()
         {
+            var tasks = new[]
+            {
+                GetDocuments(_apiConfiguration.StandardsPath),
+                GetDocuments(_apiConfiguration.FoundationApprenticeshipsPath),
+                GetDocuments(_apiConfiguration.ApprenticeshipUnitsPath)
+            };
 
-            var getStandardsTask = GetDocuments(_apiConfiguration.StandardsPath);
+            var results = await Task.WhenAll(tasks);
 
-            var getFoundationsTask = GetDocuments(_apiConfiguration.FoundationApprenticeshipsPath);
-
-            await Task.WhenAll(getStandardsTask, getFoundationsTask);
-
-            return getFoundationsTask.Result.Concat(getStandardsTask.Result).ToDictionary();
+            return results
+                .SelectMany(x => x)
+                .ToDictionary();
         }
 
         private async Task<Dictionary<string, string>> GetDocuments(string path)

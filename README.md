@@ -69,10 +69,11 @@ Data:
     "IdentifierUri": "",
     "Version": ""
   },
-  "InstituteOfApprenticeshipsApiConfiguration": {
-    "ApiBaseUrl": "https://www.instituteforapprenticeships.org/api/",
+  "SkillsEnglandApiConfiguration": {
+    "ApiBaseUrl": "https://skillsengland.education.gov.uk/api/",
     "StandardsPath": "apprenticeshipstandards",
-    "FoundationApprenticeshipsPath": "foundationapprenticeships"
+    "FoundationApprenticeshipsPath": "foundationapprenticeships?secret=<Look it up in devops library>",
+    "ApprenticeshipUnitsPath": "apprenticeshipunits?secret=<Look it up in devops library>"
   },
   "FunctionsConfiguration": {
     "UpdateStandardsConfiguration": {
