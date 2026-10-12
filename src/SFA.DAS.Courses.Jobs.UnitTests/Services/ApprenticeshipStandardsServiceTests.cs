@@ -39,7 +39,7 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
             _optionsMock = new Mock<IOptions<ApplicationConfiguration>>();
             _config = new ApplicationConfiguration
             {
-                InstituteOfApprenticeshipsApiConfiguration = new("http://standards.org/", "standards-path", "foundations-path")
+                SkillsEnglandApiConfiguration = new("http://standards.org/", "standards-path", "foundations-path", "apprenticeship-units-path")
             };
             _optionsMock.Setup(o => o.Value).Returns(_config);
 
@@ -102,16 +102,44 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
                     Content = new StringContent(mockResponseFoundationData)
                 });
 
+            var mockResponseApprenticeshipUnitsData = @"
+            [
+                {
+                    ""referenceNumber"": ""AU0001"",
+                    ""version"": ""2.0"",
+                    ""title"": ""Test Unit 1""
+                },
+                {
+                    ""referenceNumber"": ""AU0002"",
+                    ""version"": null,
+                    ""title"": ""Another Unit""
+                }
+            ]";
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("apprenticeship-units-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(mockResponseApprenticeshipUnitsData)
+                });
+
             // Act
             var result = await _sut.GetAllStandards();
 
             // Assert
             result.Should().NotBeNull();
-            result.Should().HaveCount(4);
-            result.Should().ContainKeys("ST0001_1.0", "ST0002_1.0", "FA0001_1.0", "FA0002_1.0");
+            result.Should().HaveCount(6);
+            result.Should().ContainKeys("ST0001_1.0", "ST0002_1.0", "FA0001_1.0", "FA0002_1.0", "AU0001_2.0", "AU0002_1.0");
 
             result["ST0001_1.0"].Should().Contain("Test Standard");
             result["ST0002_1.0"].Should().Contain("Another Standard");
+            result["AU0001_2.0"].Should().Contain("Test Unit 1");
+            result["AU0002_1.0"].Should().Contain("Another Unit");
         }
 
         [Test]
@@ -158,6 +186,142 @@ namespace SFA.DAS.Courses.Jobs.UnitTests.Services
 
             // Assert
             _httpClient.BaseAddress.Should().Be("http://standards.org");
+        }
+
+        [Test]
+        public async Task GetAllStandards_Should_Return_Dictionary_With_Default_Version_When_Version_Null()
+        {
+            // Arrange
+            var standardsResponse = "[]";
+            var foundationResponse = "[]";
+            var unitsResponse = @"
+            [
+                {
+                    ""referenceNumber"": ""AU0003"",
+                    ""version"": null,
+                    ""title"": ""Unit 3"",
+                    ""overview"": ""Unit overview"",
+                    ""typicalJobTitles"": [
+                        {
+                            ""name"": ""Job Title 1""
+                        }
+                    ]
+                }
+            ]";
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("standards-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(standardsResponse)
+                });
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("foundations-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(foundationResponse)
+                });
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("apprenticeship-units-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(unitsResponse)
+                });
+
+            // Act
+            var result = await _sut.GetAllStandards();
+
+            // Assert
+            result.Should().ContainKey("AU0003_1.0");
+
+            var unitDocument = JsonDocument.Parse(result["AU0003_1.0"]).RootElement;
+            unitDocument.GetProperty("referenceNumber").GetString().Should().Be("AU0003");
+            unitDocument.GetProperty("title").GetString().Should().Be("Unit 3");
+            unitDocument.GetProperty("overview").GetString().Should().Be("Unit overview");
+            unitDocument.GetProperty("typicalJobTitles")[0].GetProperty("name").GetString().Should().Be("Job Title 1");
+        }
+
+        [Test]
+        public async Task GetAllStandards_Should_Return_Standards_And_Foundations_When_Units_Response_Is_Empty_Array()
+        {
+            // Arrange
+            var standardsResponse = @"
+            [
+                {
+                    ""referenceNumber"": ""ST1000"",
+                    ""version"": ""1.1"",
+                    ""title"": ""Standard 1000""
+                }
+            ]";
+            var foundationResponse = @"
+            [
+                {
+                    ""referenceNumber"": ""FA1000"",
+                    ""version"": ""1.2"",
+                    ""title"": ""Foundation 1000""
+                }
+            ]";
+            var unitsResponse = "[]";
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("standards-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(standardsResponse)
+                });
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("foundations-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(foundationResponse)
+                });
+
+            _httpMessageHandlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.Is<HttpRequestMessage>(req => req.RequestUri != null && req.RequestUri.AbsolutePath.Contains("apprenticeship-units-path")),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(unitsResponse)
+                });
+
+            // Act
+            var result = await _sut.GetAllStandards();
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.Should().ContainKeys("ST1000_1.1", "FA1000_1.2");
         }
 
         [Test]
