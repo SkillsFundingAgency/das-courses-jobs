@@ -21,7 +21,7 @@ a GitHub repository allows history and change comparison to be made between date
 
 ```
 * A clone of this repository
-* A code editor that supports Azure functions and .NetCore 8.0
+* A code editor that supports Azure functions and .Net 10
 * A GitHub repository which is a fork of SkillsFundingAgency/StandardsData
 ```
 ### Config
@@ -69,10 +69,11 @@ Data:
     "IdentifierUri": "",
     "Version": ""
   },
-  "InstituteOfApprenticeshipsApiConfiguration": {
-    "ApiBaseUrl": "https://www.instituteforapprenticeships.org/api/",
+  "SkillsEnglandApiConfiguration": {
+    "ApiBaseUrl": "https://skillsengland.education.gov.uk/api/",
     "StandardsPath": "apprenticeshipstandards",
-    "FoundationApprenticeshipsPath": "foundationapprenticeships"
+    "FoundationApprenticeshipsPath": "foundationapprenticeships?secret=<Look it up in devops library>",
+    "ApprenticeshipUnitsPath": "apprenticeshipunits?secret=<Look it up in devops library>"
   },
   "FunctionsConfiguration": {
     "UpdateStandardsConfiguration": {
@@ -107,7 +108,7 @@ _List the key technologies in-use in the project. This will give an indication a
 
 _For Example_
 ```
-* .NetCore 8.1
+* .Net 10
 * Azure Functions V4
 * NLog
 * Azure Table Storage
